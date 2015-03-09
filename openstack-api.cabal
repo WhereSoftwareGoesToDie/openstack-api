@@ -1,0 +1,28 @@
+name:                openstack-api
+version:             0.1.0.0
+homepage:            https://github.com/anchor/openstack-api
+license:             BSD3
+license-file:        LICENSE
+author:              Anchor Engineering <engineering@anchor.com.au>
+maintainer:          Anchor Engineering <engineering@anchor.com.au>
+build-type:          Simple
+cabal-version:       >=1.10
+category:            OpenStack
+synopsis:            OpenStack APIs
+description:         OpenStack APIs
+source-repository head
+  type:      git
+  location:  https://github.com/anchor/openstack-api
+
+library
+  exposed-modules:     OpenStack.Keystone
+  build-depends:       base >=4.7 && <4.9
+                     , aeson
+                     , either
+                     , lens
+                     , servant
+                     , servant-client
+                     , text
+                     , time
+  hs-source-dirs:      lib
+  default-language:    Haskell2010
