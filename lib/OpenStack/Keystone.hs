@@ -39,16 +39,6 @@ instance ToJSON TokenRequest where
             [ "username" .= (x ^. requestUsername)
             , "password" .= (x ^. requestPassword) ]
 
-data TokenResponse = TokenResponse
-    { _token :: Token } deriving (Eq, Show)
-
-instance FromJSON TokenResponse where
-    parseJSON (Object o) =
-        case H.lookup "access" o of
-            (Just (Object o')) -> TokenResponse <$> o' .: "token"
-            _ -> mempty
-    parseJSON _ = mempty
-
 newtype ISO8601Time =
     ISO8601Time { unISO8601Time :: UTCTime } deriving (Eq, Show)
 
@@ -62,10 +52,27 @@ instance FromJSON ISO8601Time where
             Just t -> pure . ISO8601Time $ t
     parseJSON _ = mempty
 
+data Tenant = Tenant
+    { _tenantId          :: Text
+    , _tenantName        :: Text
+    , _tenantEnabled     :: Bool
+    , _tenantDescription :: Text
+    } deriving (Eq, Show)
+makeLenses ''Tenant
+
+instance FromJSON Tenant where
+    parseJSON (Object o) = Tenant
+        <$> o .: "id"
+        <*> o .: "name"
+        <*> o .: "enabled"
+        <*> o .: "description"
+    parseJSON _ = mempty
+
 data Token = Token
     { _tokenIssuedAt :: UTCTime
     , _tokenExpires  :: UTCTime
     , _tokenId       :: Text
+    , _tokenTenant   :: Maybe Tenant
     } deriving (Eq, Show)
 makeLenses ''Token
 
@@ -74,6 +81,17 @@ instance FromJSON Token where
         <$> (unISO8601Time <$> o .: "issued_at")
         <*> (unISO8601Time <$> o .: "expires")
         <*> o .: "id"
+        <*> o .:? "tenant"
+    parseJSON _ = mempty
+
+data TokenResponse = TokenResponse
+    { _token :: Token } deriving (Eq, Show)
+
+instance FromJSON TokenResponse where
+    parseJSON (Object o) =
+        case H.lookup "access" o of
+            (Just (Object o')) -> TokenResponse <$> o' .: "token"
+            _ -> mempty
     parseJSON _ = mempty
 
 type KeystoneApi =
