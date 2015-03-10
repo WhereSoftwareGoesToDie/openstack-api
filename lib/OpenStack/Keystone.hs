@@ -76,6 +76,9 @@ data Tenant = Tenant
     } deriving (Eq, Show)
 makeLenses ''Tenant
 
+instance ToText TenantId where
+    toText = T.decodeUtf8 . unTenantId
+
 instance FromJSON Tenant where
     parseJSON (Object o) = Tenant
         <$> o .: "id"
@@ -94,6 +97,9 @@ instance FromJSON TokenId where
 
 instance ToJSON TokenId where
     toJSON = toJSON . T.decodeUtf8 . unTokenId
+
+instance ToText TokenId where
+    toText = T.decodeUtf8 . unTokenId
 
 data Token = Token
     { _tokenIssuedAt :: UTCTime
