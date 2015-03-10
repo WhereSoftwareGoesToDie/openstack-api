@@ -18,6 +18,7 @@ library
   exposed-modules:     OpenStack.Keystone
   build-depends:       base >=4.7 && <4.9
                      , aeson
+                     , bytestring
                      , either
                      , lens
                      , old-locale

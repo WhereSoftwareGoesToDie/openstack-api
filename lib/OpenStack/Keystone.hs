@@ -1,7 +1,10 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
 module OpenStack.Keystone where
 
 import           Control.Applicative
@@ -9,11 +12,13 @@ import           Control.Lens.Operators     ((^.))
 import           Control.Lens.TH
 import           Control.Monad.Trans.Either
 import           Data.Aeson
+import           Data.ByteString            (ByteString)
 import qualified Data.HashMap.Strict        as H
 import           Data.Monoid
 import           Data.Proxy
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
+import qualified Data.Text.Encoding         as T
 import           Data.Time.Clock
 import           Data.Time.Format
 import           Servant.API
@@ -68,10 +73,21 @@ instance FromJSON Tenant where
         <*> o .: "description"
     parseJSON _ = mempty
 
+newtype TokenId = TokenId
+    { unTokenId :: ByteString
+    } deriving (Eq, Show)
+makeWrapped ''TokenId
+
+instance FromJSON TokenId where
+    parseJSON x = TokenId . T.encodeUtf8 <$> parseJSON x
+
+instance ToJSON TokenId where
+    toJSON = toJSON . T.decodeUtf8 . unTokenId
+
 data Token = Token
     { _tokenIssuedAt :: UTCTime
     , _tokenExpires  :: UTCTime
-    , _tokenId       :: Text
+    , _tokenId       :: TokenId
     , _tokenTenant   :: Maybe Tenant
     } deriving (Eq, Show)
 makeLenses ''Token
