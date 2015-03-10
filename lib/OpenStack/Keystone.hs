@@ -57,8 +57,19 @@ instance FromJSON ISO8601Time where
             Just t -> pure . ISO8601Time $ t
     parseJSON _ = mempty
 
+newtype TenantId = TenantId
+    { unTenantId :: ByteString
+    } deriving (Eq, Show)
+makeWrapped ''TenantId
+
+instance FromJSON TenantId where
+    parseJSON x = TenantId . T.encodeUtf8 <$> parseJSON x
+
+instance ToJSON TenantId where
+    toJSON = toJSON . T.decodeUtf8 . unTenantId
+
 data Tenant = Tenant
-    { _tenantId          :: Text
+    { _tenantId          :: TenantId
     , _tenantName        :: Text
     , _tenantEnabled     :: Bool
     , _tenantDescription :: Text
@@ -140,9 +151,20 @@ instance FromJSON Role where
         <$> o .: "name"
     parseJSON _ = mempty
 
+newtype UserId = UserId
+    { unUserId :: ByteString
+    } deriving (Eq, Show)
+makeWrapped ''UserId
+
+instance FromJSON UserId where
+    parseJSON x = UserId . T.encodeUtf8 <$> parseJSON x
+
+instance ToJSON UserId where
+    toJSON = toJSON . T.decodeUtf8 . unUserId
+
 data User = User
     { _userUserName :: Text
-    , _userId       :: Text
+    , _userId       :: UserId
     , _userRoles    :: [Role]
     , _userName     :: Text
     } deriving (Eq, Show)
