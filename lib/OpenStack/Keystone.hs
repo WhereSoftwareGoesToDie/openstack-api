@@ -84,13 +84,50 @@ instance FromJSON Token where
         <*> o .:? "tenant"
     parseJSON _ = mempty
 
+data Service = Service
+  deriving (Eq, Show)
+
+instance FromJSON Service where
+    parseJSON (Object _o) = pure Service
+    parseJSON _ = mempty
+
+data Role = Role
+    { _roleName :: Text
+    } deriving (Eq, Show)
+
+instance FromJSON Role where
+    parseJSON (Object o) = Role
+        <$> o .: "name"
+    parseJSON _ = mempty
+
+data User = User
+    { _userUserName :: Text
+    , _userId       :: Text
+    , _userRoles    :: [Role]
+    , _userName     :: Text
+    } deriving (Eq, Show)
+
+instance FromJSON User where
+    parseJSON (Object o) = User
+        <$> o .: "username"
+        <*> o .: "id"
+        <*> o .: "roles"
+        <*> o .: "name"
+    parseJSON _ = mempty
+
 data TokenResponse = TokenResponse
-    { _token :: Token } deriving (Eq, Show)
+    { _responseToken          :: Token
+    , _responseServiceCatalog :: [Service]
+    , _responseUser           :: User
+    } deriving (Eq, Show)
 
 instance FromJSON TokenResponse where
     parseJSON (Object o) =
         case H.lookup "access" o of
-            (Just (Object o')) -> TokenResponse <$> o' .: "token"
+            (Just (Object o')) -> TokenResponse
+                <$> o' .: "token"
+                <*> o' .: "serviceCatalog"
+                <*> o' .: "user"
             _ -> mempty
     parseJSON _ = mempty
 
