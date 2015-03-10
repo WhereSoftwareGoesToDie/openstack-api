@@ -84,11 +84,35 @@ instance FromJSON Token where
         <*> o .:? "tenant"
     parseJSON _ = mempty
 
+data Endpoint = Endpoint
+    { _endpointAdminUrl    :: Text
+    , _endpointInternalUrl :: Text
+    , _endpointPublicUrl   :: Text
+    , _endpointRegion      :: Text
+    , _endpointId          :: Text
+    } deriving (Eq, Show)
+
+instance FromJSON Endpoint where
+    parseJSON (Object o) = Endpoint
+        <$> o .: "adminURL"
+        <*> o .: "internalURL"
+        <*> o .: "publicURL"
+        <*> o .: "region"
+        <*> o .: "id"
+    parseJSON _ = mempty
+
 data Service = Service
-  deriving (Eq, Show)
+    { _serviceEndpoints :: [Endpoint]
+    , _serviceType      :: Text
+    , _serviceName      :: Text
+    } deriving (Eq, Show)
+makeLenses ''Service
 
 instance FromJSON Service where
-    parseJSON (Object _o) = pure Service
+    parseJSON (Object o) = Service
+        <$> o .: "endpoints"
+        <*> o .: "type"
+        <*> o .: "name"
     parseJSON _ = mempty
 
 data Role = Role
