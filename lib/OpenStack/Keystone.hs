@@ -21,9 +21,9 @@ import           Servant.Client
 import           System.Locale
 
 data TokenRequest = TokenRequest
-    { _tenantName :: Maybe Text
-    , _username   :: Text
-    , _password   :: Text
+    { _requestTenantName :: Maybe Text
+    , _requestUsername   :: Text
+    , _requestPassword   :: Text
     } deriving (Eq, Show)
 makeLenses ''TokenRequest
 
@@ -32,12 +32,12 @@ instance ToJSON TokenRequest where
       where
         auth :: Value
         auth = object
-            [ "tenantName" .= (x ^. tenantName)
+            [ "tenantName" .= (x ^. requestTenantName)
             , "passwordCredentials" .= passwordCredentials ]
         passwordCredentials :: Value
         passwordCredentials = object
-            [ "username" .= (x ^. username)
-            , "password" .= (x ^. password) ]
+            [ "username" .= (x ^. requestUsername)
+            , "password" .= (x ^. requestPassword) ]
 
 data TokenResponse = TokenResponse
     { _token :: Token } deriving (Eq, Show)
@@ -65,7 +65,7 @@ instance FromJSON ISO8601Time where
 data Token = Token
     { _tokenIssuedAt :: UTCTime
     , _tokenExpires  :: UTCTime
-    , _TokenId       :: Text
+    , _tokenId       :: Text
     } deriving (Eq, Show)
 makeLenses ''Token
 
