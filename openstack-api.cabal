@@ -20,9 +20,11 @@ library
                      , aeson
                      , either
                      , lens
+                     , old-locale
                      , servant
                      , servant-client
                      , text
                      , time
+                     , unordered-containers
   hs-source-dirs:      lib
   default-language:    Haskell2010
