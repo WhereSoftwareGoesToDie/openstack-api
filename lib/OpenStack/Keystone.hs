@@ -12,18 +12,15 @@ import           Control.Lens.Operators     ((^.))
 import           Control.Lens.TH
 import           Control.Monad.Trans.Either
 import           Data.Aeson
-import           Data.ByteString            (ByteString)
 import qualified Data.HashMap.Strict        as H
 import           Data.Monoid
 import           Data.Proxy
 import           Data.Text                  (Text)
-import qualified Data.Text                  as T
-import qualified Data.Text.Encoding         as T
 import           Data.Time.Clock
-import           Data.Time.Format
 import           Servant.API
 import           Servant.Client
-import           System.Locale
+
+import           OpenStack.Common
 
 data TokenRequest = TokenRequest
     { _requestTenantName :: Maybe Text
@@ -44,30 +41,6 @@ instance ToJSON TokenRequest where
             [ "username" .= (x ^. requestUsername)
             , "password" .= (x ^. requestPassword) ]
 
-newtype ISO8601Time =
-    ISO8601Time { unISO8601Time :: UTCTime } deriving (Eq, Show)
-
-instance FromJSON ISO8601Time where
-    parseJSON (String x) =
-        let x' = T.unpack x
-            res = parseTime defaultTimeLocale "%FT%T%Q%Z" x'
-              <|> parseTime defaultTimeLocale "%F" x'
-        in case res of
-            Nothing -> mempty
-            Just t -> pure . ISO8601Time $ t
-    parseJSON _ = mempty
-
-newtype TenantId = TenantId
-    { unTenantId :: ByteString
-    } deriving (Eq, Show)
-makeWrapped ''TenantId
-
-instance FromJSON TenantId where
-    parseJSON x = TenantId . T.encodeUtf8 <$> parseJSON x
-
-instance ToJSON TenantId where
-    toJSON = toJSON . T.decodeUtf8 . unTenantId
-
 data Tenant = Tenant
     { _tenantId          :: TenantId
     , _tenantName        :: Text
@@ -76,9 +49,6 @@ data Tenant = Tenant
     } deriving (Eq, Show)
 makeLenses ''Tenant
 
-instance ToText TenantId where
-    toText = T.decodeUtf8 . unTenantId
-
 instance FromJSON Tenant where
     parseJSON (Object o) = Tenant
         <$> o .: "id"
@@ -86,20 +56,6 @@ instance FromJSON Tenant where
         <*> o .: "enabled"
         <*> o .: "description"
     parseJSON _ = mempty
-
-newtype TokenId = TokenId
-    { unTokenId :: ByteString
-    } deriving (Eq, Show)
-makeWrapped ''TokenId
-
-instance FromJSON TokenId where
-    parseJSON x = TokenId . T.encodeUtf8 <$> parseJSON x
-
-instance ToJSON TokenId where
-    toJSON = toJSON . T.decodeUtf8 . unTokenId
-
-instance ToText TokenId where
-    toText = T.decodeUtf8 . unTokenId
 
 data Token = Token
     { _tokenIssuedAt :: UTCTime
@@ -156,17 +112,6 @@ instance FromJSON Role where
     parseJSON (Object o) = Role
         <$> o .: "name"
     parseJSON _ = mempty
-
-newtype UserId = UserId
-    { unUserId :: ByteString
-    } deriving (Eq, Show)
-makeWrapped ''UserId
-
-instance FromJSON UserId where
-    parseJSON x = UserId . T.encodeUtf8 <$> parseJSON x
-
-instance ToJSON UserId where
-    toJSON = toJSON . T.decodeUtf8 . unUserId
 
 data User = User
     { _userUserName :: Text

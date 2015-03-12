@@ -2,49 +2,20 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 module OpenStack.Nova where
 
 import           Control.Applicative
-import           Control.Lens.TH
 import           Control.Monad.Trans.Either
 import           Data.Aeson
-import           Data.ByteString            (ByteString)
 import           Data.Monoid
 import           Data.Proxy
 import           Data.Text                  (Text)
-import qualified Data.Text.Encoding         as T
 import           Servant.API
 import           Servant.Client
 
-import           OpenStack.Keystone
-
-newtype ServerId = ServerId
-    { unServerId :: ByteString
-    } deriving (Eq, Show)
-makeWrapped ''ServerId
-
-instance FromJSON ServerId where
-    parseJSON x = ServerId . T.encodeUtf8 <$> parseJSON x
-
-instance ToJSON ServerId where
-    toJSON = toJSON . T.decodeUtf8 . unServerId
-
-instance ToText ServerId where
-    toText = T.decodeUtf8 . unServerId
-
-data Link = Link
-    { _linkHref :: Text
-    , _linkRel  :: Text
-    } deriving (Eq, Show)
-
-instance FromJSON Link where
-    parseJSON (Object o) = Link
-        <$> o .: "href"
-        <*> o .: "rel"
-    parseJSON _ = mempty
+import           OpenStack.Common
 
 data Server = Server
     { _serverId    :: ServerId
