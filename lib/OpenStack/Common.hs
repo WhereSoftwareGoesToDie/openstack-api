@@ -9,12 +9,14 @@ import           Control.Applicative
 import           Control.Lens.TH
 import           Data.Aeson
 import           Data.ByteString     (ByteString)
+import qualified Data.HashMap.Strict as H
 import           Data.Monoid
 import           Data.Text           (Text)
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as T
 import           Data.Time.Clock
 import           Data.Time.Format
+import qualified Data.Vector         as V
 import           Servant.API
 import           System.Locale
 
@@ -84,6 +86,20 @@ instance ToJSON ServerId where
 instance ToText ServerId where
     toText = T.decodeUtf8 . unServerId
 
+newtype DomainId = DomainId
+    { unDomainId :: ByteString
+    } deriving (Eq, Show)
+makeWrapped ''DomainId
+
+instance FromJSON DomainId where
+    parseJSON x = DomainId . T.encodeUtf8 <$> parseJSON x
+
+instance ToJSON DomainId where
+    toJSON = toJSON . T.decodeUtf8 . unDomainId
+
+instance ToText DomainId where
+    toText = T.decodeUtf8 . unDomainId
+
 data Link = Link
     { _linkHref :: Text
     , _linkRel  :: Text
@@ -93,4 +109,9 @@ instance FromJSON Link where
     parseJSON (Object o) = Link
         <$> o .: "href"
         <*> o .: "rel"
+    parseJSON _ = mempty
+
+instance FromJSON [Link] where
+    parseJSON (Object o) = mapM (\(k,v) -> Link k <$> parseJSON v) $ H.toList o
+    parseJSON (Array xs) = mapM parseJSON $ V.toList xs
     parseJSON _ = mempty

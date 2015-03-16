@@ -21,6 +21,7 @@ library
   build-depends:       base >=4.7 && <4.9
                      , aeson
                      , bytestring
+                     , containers
                      , either
                      , lens
                      , http-client
@@ -34,5 +35,6 @@ library
                      , transformers
                      , transformers-compat >= 0.4
                      , unordered-containers
+                     , vector
   hs-source-dirs:      lib
   default-language:    Haskell2010
