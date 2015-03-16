@@ -23,11 +23,16 @@ library
                      , bytestring
                      , either
                      , lens
+                     , http-client
+                     , http-types
+                     , mtl
                      , old-locale
                      , servant
                      , servant-client
                      , text
                      , time
+                     , transformers
+                     , transformers-compat >= 0.4
                      , unordered-containers
   hs-source-dirs:      lib
   default-language:    Haskell2010
