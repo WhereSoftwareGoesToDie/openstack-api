@@ -29,6 +29,25 @@ suite username password KeystoneMethods{..} =
                     []  -> fail "No \"Default\" domain"
                     (_:_) -> return ()
 
+        it "can create a project" $ do
+            Right _tid <- runExceptT $ requestToken (TokenRequest (Just "demo") username password)
+            pending
+
+        it "can create a user" $ do
+            Right tid <- runExceptT $ requestToken (TokenRequest (Just "demo") username password)
+            pending
+            let _createUserRequestDefaultProject = undefined
+                _createUserRequestDescription = "foooo"
+                _createUserRequestDomainId = Nothing
+                _createUserRequestEmail = "foo@foo.de"
+                _createUserRequestEnabled = True
+                _createUserRequestName = "foo"
+                _createUserRequestPassword = "password"
+            res <- runExceptT $ createUser tid CreateUserRequest{..}
+            case res of
+                Left e -> fail $ show e
+                Right _ -> return ()
+
 main :: IO ()
 main = do
     username <- T.pack <$> getEnv "OS_USERNAME"

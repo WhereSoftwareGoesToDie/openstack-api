@@ -100,6 +100,20 @@ instance ToJSON DomainId where
 instance ToText DomainId where
     toText = T.decodeUtf8 . unDomainId
 
+newtype ProjectId = ProjectId
+    { unProjectId :: ByteString
+    } deriving (Eq, Show)
+makeWrapped ''ProjectId
+
+instance FromJSON ProjectId where
+    parseJSON x = ProjectId . T.encodeUtf8 <$> parseJSON x
+
+instance ToJSON ProjectId where
+    toJSON = toJSON . T.decodeUtf8 . unProjectId
+
+instance ToText ProjectId where
+    toText = T.decodeUtf8 . unProjectId
+
 data Link = Link
     { _linkHref :: Text
     , _linkRel  :: Text

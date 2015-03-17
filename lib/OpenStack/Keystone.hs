@@ -81,9 +81,43 @@ instance FromJSON [Domain] where
             _ -> mempty
     parseJSON _ = mempty
 
+data CreateUserRequest = CreateUserRequest
+    { _createUserRequestDefaultProject :: ProjectId
+    , _createUserRequestDescription    :: Text
+    , _createUserRequestDomainId       :: Maybe DomainId
+    , _createUserRequestEmail          :: Text
+    , _createUserRequestEnabled        :: Bool
+    , _createUserRequestName           :: Text
+    , _createUserRequestPassword       :: Text
+    } deriving (Eq, Show)
+makeLenses ''CreateUserRequest
+
+instance ToJSON CreateUserRequest where
+    toJSON CreateUserRequest{..} = object
+        [ "default_project_id" .= _createUserRequestDefaultProject
+        , "description" .= _createUserRequestDescription
+        , "domain_id" .= _createUserRequestDomainId
+        , "email" .=  _createUserRequestEmail
+        , "enabled" .= _createUserRequestEnabled
+        , "name" .= _createUserRequestName
+        , "password" .= _createUserRequestPassword
+        ]
+
+data CreateUserResponse = CreateUserResponse
+    { _createUserResponseDefaultProject :: ProjectId
+    , _createUserResponseDescription    :: Text
+    , _createUserResponseDomainId       :: DomainId
+    , _createUserResponseEmail          :: Text
+    , _createUserResponseEnabled        :: Bool
+    , _createUserResponseName           :: Text
+    , _createUserResponseId             :: UserId
+    } deriving (Eq, Show)
+makeLenses ''CreateUserResponse
+
 type KeystoneApi =
          "v3" :> "auth" :> "tokens" :> ReqBody '[JSON] TokenRequest :> Raw
     :<|> "v3" :> "domains" :> Header "X-Auth-Token" TokenId :> Get '[JSON] [Domain]
+    :<|> "v3" :> "users" :> ReqBody '[JSON] CreateUserRequest :> Header "X-Auth-Token" TokenId :> Post '[JSON] ()
 
 keystoneApi :: Proxy KeystoneApi
 keystoneApi = Proxy
@@ -91,13 +125,15 @@ keystoneApi = Proxy
 data KeystoneMethods = KeystoneMethods
     { requestToken :: TokenRequest -> ExceptT ServantError IO TokenId
     , listDomains  :: TokenId -> ExceptT ServantError IO [Domain]
+    , createUser   :: TokenId -> CreateUserRequest -> ExceptT ServantError IO CreateUserResponse
     }
 
 keystoneMethods :: String -> Either String KeystoneMethods
 keystoneMethods url = do
     baseUrl <- parseBaseUrl url
     let (requestToken' :<|>
-         listDomains') = client keystoneApi
+         listDomains' :<|>
+         createUser') = client keystoneApi
         requestToken req = coerce $ do
             (status,body,ct,res) <- requestToken' req "POST" baseUrl
             unless (status == 201) $ throwError $ FailureResponse (Status status "") ct body
@@ -106,4 +142,7 @@ keystoneMethods url = do
                 Just x -> return $ TokenId x
         listDomains token =
             coerce $ listDomains' (Just token) baseUrl
+        createUser token req = do
+            () <- coerce $ createUser' req (Just token) baseUrl
+            fail "foo"
     return KeystoneMethods{..}
