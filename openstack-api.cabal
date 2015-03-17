@@ -38,3 +38,15 @@ library
                      , vector
   hs-source-dirs:      lib
   default-language:    Haskell2010
+
+test-suite unit-tests
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             test.hs
+  default-language:    Haskell2010
+  build-depends:       base >=4.7 && <5
+                     , openstack-api
+                     , hspec
+                     , text
+                     , transformers
+                     , transformers-compat >= 0.4
