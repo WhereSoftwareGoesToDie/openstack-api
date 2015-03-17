@@ -72,6 +72,9 @@ instance FromJSON UserId where
 instance ToJSON UserId where
     toJSON = toJSON . T.decodeUtf8 . unUserId
 
+instance ToText UserId where
+    toText = T.decodeUtf8 . unUserId
+
 newtype ServerId = ServerId
     { unServerId :: ByteString
     } deriving (Eq, Show)

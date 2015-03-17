@@ -47,6 +47,9 @@ test-suite unit-tests
   build-depends:       base >=4.7 && <5
                      , openstack-api
                      , hspec
+                     , HUnit
+                     , old-locale
                      , text
+                     , time
                      , transformers
                      , transformers-compat >= 0.4
